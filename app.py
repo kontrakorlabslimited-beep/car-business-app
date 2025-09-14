@@ -1,66 +1,121 @@
 
 import streamlit as st
 import pandas as pd
+import os
 
-# Initialize session state for data storage
-if 'vehicles' not in st.session_state:
-    st.session_state.vehicles = pd.DataFrame(columns=[
-        'VIN', 'Make', 'Model', 'Year', 'Purchase Price', 'Import Charges',
-        'Other Costs', 'Total Cost', 'Sale Price', 'Repairs', 'Other Expenses',
-        'Profit/Loss'
-    ])
+# File paths
+DATA_FILE = "inventory_data.csv"
+LOGO_FILE = "abode_logo.png"
 
-st.title("🚗 Car Business Management App")
+# Sample user credentials and roles
+USER_CREDENTIALS = {
+    "admin": {"password": "admin123", "role": "admin"},
+    "staff": {"password": "staff123", "role": "staff"}
+}
 
-# Sidebar navigation
-menu = st.sidebar.radio("Navigate", ["Add Vehicle", "View Inventory", "Profit/Loss Summary"])
-
-if menu == "Add Vehicle":
-    st.header("Add Vehicle Transaction")
-
-    with st.form("vehicle_form"):
-        vin = st.text_input("VIN")
-        make = st.text_input("Make")
-        model = st.text_input("Model")
-        year = st.number_input("Year", min_value=1900, max_value=2100, step=1)
-        purchase_price = st.number_input("Purchase Price", min_value=0.0)
-        import_charges = st.number_input("Import Charges", min_value=0.0)
-        other_costs = st.number_input("Other Costs", min_value=0.0)
-        sale_price = st.number_input("Sale Price", min_value=0.0)
-        repairs = st.number_input("Repairs", min_value=0.0)
-        other_expenses = st.number_input("Other Expenses", min_value=0.0)
-
-        submitted = st.form_submit_button("Add Vehicle")
-
-        if submitted:
-            total_cost = purchase_price + import_charges + other_costs + repairs + other_expenses
-            profit_loss = sale_price - total_cost
-            new_row = {
-                'VIN': vin,
-                'Make': make,
-                'Model': model,
-                'Year': year,
-                'Purchase Price': purchase_price,
-                'Import Charges': import_charges,
-                'Other Costs': other_costs,
-                'Total Cost': total_cost,
-                'Sale Price': sale_price,
-                'Repairs': repairs,
-                'Other Expenses': other_expenses,
-                'Profit/Loss': profit_loss
-            }
-            st.session_state.vehicles = pd.concat([st.session_state.vehicles, pd.DataFrame([new_row])], ignore_index=True)
-            st.success("Vehicle added successfully!")
-
-elif menu == "View Inventory":
-    st.header("Vehicle Inventory")
-    st.dataframe(st.session_state.vehicles)
-
-elif menu == "Profit/Loss Summary":
-    st.header("Profit/Loss Summary")
-    if not st.session_state.vehicles.empty:
-        st.dataframe(st.session_state.vehicles[['VIN', 'Make', 'Model', 'Year', 'Total Cost', 'Sale Price', 'Profit/Loss']])
-        total_profit = st.session_state.vehicles['Profit/Loss'].sum()
-        st.metric("Total Profit/Loss", f"${total_profit:,.2f}")
+# Load inventory data from CSV
+def load_inventory():
+    if os.path.exists(DATA_FILE):
+        return pd.read_csv(DATA_FILE)
     else:
-        st.info("No data available.")
+        return pd.DataFrame(columns=["Vehicle ID", "Make", "Model", "Year", "Purchase Price (₦)", "Purchase Price ($)", "Sale Price (₦)", "Sale Price ($)", "Expenses (₦)", "Expenses ($)"])
+
+# Save inventory data to CSV
+def save_inventory(df):
+    df.to_csv(DATA_FILE, index=False)
+
+# Welcome screen
+def show_welcome_screen(username, role):
+    st.image(LOGO_FILE, width=150)
+    st.markdown(f"## Welcome, {username.capitalize()} ({role.capitalize()})")
+    st.markdown("### Abode Car Business Management App")
+    st.markdown("---")
+
+# Login screen
+def login():
+    st.image(LOGO_FILE, width=150)
+    st.title("Abode Car Business Management App")
+    st.subheader("🔐 Login")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    if st.button("Login"):
+        if username in USER_CREDENTIALS and USER_CREDENTIALS[username]["password"] == password:
+            st.session_state["logged_in"] = True
+            st.session_state["username"] = username
+            st.session_state["role"] = USER_CREDENTIALS[username]["role"]
+            st.experimental_rerun()
+        else:
+            st.error("Invalid username or password")
+
+# Main app interface
+def main_app():
+    show_welcome_screen(st.session_state["username"], st.session_state["role"])
+    inventory = load_inventory()
+
+    # Admin features
+    if st.session_state["role"] == "admin":
+        st.subheader("📋 Add Vehicle to Inventory")
+        with st.form("add_vehicle_form"):
+            vehicle_id = st.text_input("Vehicle ID")
+            make = st.text_input("Make")
+            model = st.text_input("Model")
+            year = st.text_input("Year")
+            purchase_naira = st.number_input("Purchase Price (₦)", min_value=0.0)
+            purchase_dollar = st.number_input("Purchase Price ($)", min_value=0.0)
+            sale_naira = st.number_input("Sale Price (₦)", min_value=0.0)
+            sale_dollar = st.number_input("Sale Price ($)", min_value=0.0)
+            expenses_naira = st.number_input("Expenses (₦)", min_value=0.0)
+            expenses_dollar = st.number_input("Expenses ($)", min_value=0.0)
+            submitted = st.form_submit_button("Add Vehicle")
+            if submitted:
+                new_entry = {
+                    "Vehicle ID": vehicle_id,
+                    "Make": make,
+                    "Model": model,
+                    "Year": year,
+                    "Purchase Price (₦)": purchase_naira,
+                    "Purchase Price ($)": purchase_dollar,
+                    "Sale Price (₦)": sale_naira,
+                    "Sale Price ($)": sale_dollar,
+                    "Expenses (₦)": expenses_naira,
+                    "Expenses ($)": expenses_dollar
+                }
+                inventory = inventory.append(new_entry, ignore_index=True)
+                save_inventory(inventory)
+                st.success("Vehicle added successfully!")
+
+        st.subheader("🗑️ Delete Vehicle from Inventory")
+        delete_id = st.text_input("Enter Vehicle ID to Delete")
+        if st.button("Delete Vehicle"):
+            if delete_id in inventory["Vehicle ID"].values:
+                inventory = inventory[inventory["Vehicle ID"] != delete_id]
+                save_inventory(inventory)
+                st.success(f"Vehicle ID {delete_id} deleted.")
+            else:
+                st.error("Vehicle ID not found.")
+
+    # Inventory display
+    st.subheader("📦 Vehicle Inventory")
+    st.dataframe(inventory, use_container_width=True)
+
+    # Profit/Loss Summary
+    st.subheader("📊 Profit/Loss Summary")
+    if not inventory.empty:
+        inventory["Profit/Loss (₦)"] = inventory["Sale Price (₦)"] - (inventory["Purchase Price (₦)"] + inventory["Expenses (₦)"])
+        inventory["Profit/Loss ($)"] = inventory["Sale Price ($)"] - (inventory["Purchase Price ($)"] + inventory["Expenses ($)"])
+        st.dataframe(inventory[["Vehicle ID", "Make", "Model", "Profit/Loss (₦)", "Profit/Loss ($)"]], use_container_width=True)
+
+    # Logout button
+    if st.sidebar.button("Logout"):
+        st.session_state.clear()
+        st.experimental_rerun()
+
+# Streamlit session state initialization
+if "logged_in" not in st.session_state:
+    st.session_state["logged_in"] = False
+
+# Run app
+if st.session_state["logged_in"]:
+    main_app()
+else:
+    login()
