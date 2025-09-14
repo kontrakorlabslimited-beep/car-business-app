@@ -1,3 +1,1 @@
 Vehicle ID,Make,Model,Year,Purchase Price (₦),Import Charges (₦),Repairs (₦),Other Expenses (₦),Exchange Rate,Sale Price (₦),Profit/Loss (₦),Profit/Loss ($),Status
-V001,Toyota,Camry,2020,5000000,500000,200000,100000,1000,6200000,400000,400.0,Gain
-V002,Honda,Accord,2019,4800000,450000,150000,100000,1000,5500000,-50000,-50.0,Loss
