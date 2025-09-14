@@ -1,1 +1,4 @@
-Vehicle ID,Make,Model,Year,Purchase Price (₦),Import Charges (₦),Other Expenses (₦),Repairs (₦),Sale Price (₦),Total Cost (₦),Profit/Loss (₦),Profit/Loss ($),Status,Exchange Rate
+Vehicle ID,Make,Model,Year,Purchase Price (₦),Import Charges (₦),Repairs (₦),Other Expenses (₦),Exchange Rate,Sale Price (₦),Total Cost (₦),Profit/Loss (₦),Profit/Loss ($),Status
+V001,Toyota,Corolla,2020,3000000,500000,200000,100000,1000,4000000,3800000,200000,200.0,Gain
+V002,Honda,Civic,2019,2800000,450000,150000,120000,1000,3700000,3520000,180000,180.0,Gain
+V003,Ford,Focus,2021,3200000,550000,250000,110000,1000,3900000,4110000,-210000,-210.0,Loss
