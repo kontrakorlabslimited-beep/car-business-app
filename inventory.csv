@@ -1,1 +1,2 @@
-Vehicle ID,Make,Model,Year,Purchase Price (₦),Import Charges (₦),Repairs (₦),Other Expenses (₦),Total Cost (₦),Sale Price (₦),Exchange Rate,Profit/Loss (₦),Profit/Loss ($),Status
+Vehicle ID,Make,Model,Year,Purchase Price (₦),Import Charges (₦),Repairs (₦),Other Expenses (₦),Total Cost (₦),Sale Price (₦),Exchange Rate,Date
+A001,Toyota,Corolla,2020,3000000,500000,200000,100000,3800000,4200000,1000,2025-09-14
